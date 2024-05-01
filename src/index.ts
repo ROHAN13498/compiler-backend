@@ -23,7 +23,7 @@ const wss = new WebSocket.Server({ server });
 const userSocketMap: { [userId: string]: CustomWebSocket } = {};
 
 wss.on("connection", async (ws: CustomWebSocket, req) => {
-    const userId = req.url ? new URL(req.url, 'http://localhost').searchParams.get('userId') : undefined;
+    const userId = req.url ? new URL(req.url).searchParams.get('userId') : undefined;
     if (userId) {
         // Store userId in WebSocket instance
         ws.userId = userId;
@@ -68,6 +68,11 @@ app.get("/", (req, res) => {
     return res.json({ message: "Healthy server" });
 });
 
+app.get("/redis",async (req,res)=>{
+    const message=await client.brpop("submissions",0)
+    return res.json({message})
+})
+
 app.post("/output", async (req, res) => {
     const { userId, output,error} = req.body;
     console.log("triggered")
@@ -79,7 +84,7 @@ app.post("/output", async (req, res) => {
         }
         else{
             console.log("output",output)
-            ws.send(output);
+            ws.send("\n"+output);
         }
         res.json({ success: true });
     } else {

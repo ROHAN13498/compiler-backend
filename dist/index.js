@@ -28,7 +28,7 @@ const wss = new ws_1.default.Server({ server });
 // Hashmap to store userId and WebSocket instance
 const userSocketMap = {};
 wss.on("connection", (ws, req) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.url ? new URL(req.url, 'http://localhost').searchParams.get('userId') : undefined;
+    const userId = req.url ? new URL(req.url).searchParams.get('userId') : undefined;
     if (userId) {
         // Store userId in WebSocket instance
         ws.userId = userId;
@@ -69,6 +69,10 @@ function pushCodeSubmissionToQueue(userId, code, language) {
 app.get("/", (req, res) => {
     return res.json({ message: "Healthy server" });
 });
+app.get("/redis", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const message = yield client.brpop("submissions", 0);
+    return res.json({ message });
+}));
 app.post("/output", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, output, error } = req.body;
     console.log("triggered");
@@ -80,7 +84,7 @@ app.post("/output", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         else {
             console.log("output", output);
-            ws.send(output);
+            ws.send("\n" + output);
         }
         res.json({ success: true });
     }
