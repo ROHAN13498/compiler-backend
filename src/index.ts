@@ -23,7 +23,7 @@ const wss = new WebSocket.Server({ server });
 const userSocketMap: { [userId: string]: CustomWebSocket } = {};
 
 wss.on("connection", async (ws: CustomWebSocket, req) => {
-    const userId = req.url ? new URL(req.url).searchParams.get('userId') : undefined;
+    const userId = req.url ? new URL(req.url, 'http://localhost').searchParams.get('userId') : undefined;
     if (userId) {
         // Store userId in WebSocket instance
         ws.userId = userId;
@@ -75,7 +75,6 @@ app.get("/redis",async (req,res)=>{
 
 app.post("/output", async (req, res) => {
     const { userId, output,error} = req.body;
-    console.log("triggered")
     const ws = userSocketMap[userId];
     if (ws && ws.readyState === WebSocket.OPEN) {
         if(error){
